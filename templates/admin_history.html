@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card narrow">
+    <h1>📜 Status History</h1>
+    <p class="subtitle">Complaint #{{ complaint.complaint_id }} — {{ complaint.student_class }} (Anonymous)</p>
+    <div class="detail-row"><div class="detail-label">Category</div><div class="detail-value">{{ complaint.category }}</div></div>
+    <div class="detail-row"><div class="detail-label">Description</div><div class="detail-value">{{ complaint.description }}</div></div>
+    <div class="detail-row"><div class="detail-label">Current</div><div class="detail-value">
+        {% if complaint.status == 'Pending' %}<span class="badge badge-pending">Pending</span>
+        {% elif complaint.status == 'In Progress' %}<span class="badge badge-progress">In Progress</span>
+        {% else %}<span class="badge badge-resolved">Resolved</span>{% endif %}
+    </div></div>
+    {% if history|length == 0 %}
+        <div class="info-box">No changes yet.</div>
+    {% else %}
+        <table>
+            <tr><th>#</th><th>From</th><th>To</th><th>Time</th></tr>
+            {% for h in history %}<tr><td>{{ loop.index }}</td><td>{{ h.old_status }}</td><td>{{ h.new_status }}</td><td>{{ h.change_time }}</td></tr>{% endfor %}
+        </table>
+    {% endif %}
+    <div class="action-bar"><a href="{{ url_for('admin_complaints') }}" class="btn" style="background:#a0aec0;">Back</a></div>
+</div>
+{% endblock %}

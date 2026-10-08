@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Submit Complaint{% endblock %}
+{% block content %}
+{% if session.get('admin_id') or session.get('inspector_id') %}
+    <div class="card narrow" style="text-align:center; margin-top:40px;">
+        <h2>Access Denied</h2>
+        <p class="subtitle">You cannot submit complaints as staff.</p>
+        {% if session.get('admin_id') %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-lg">Go to Admin Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('inspector_dashboard') }}" class="btn btn-lg">Go to Inspector Dashboard</a>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="card narrow">
+        <h1>📝 Submit a Complaint</h1>
+        <p class="subtitle">Fill in the details below. You will receive a Complaint ID.</p>
+        <form method="POST">
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" name="student_name" placeholder="e.g. Aarav Sharma" required>
+            </div>
+            <div class="form-group">
+                <label>Roll Number</label>
+                <input type="text" name="roll_number" placeholder="e.g. AIML01" required>
+            </div>
+            <div class="form-group">
+                <label>Class</label>
+                <select name="student_class" required>
+                    <option value="">-- Select your class --</option>
+                    {% for c in classes %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category" required>
+                    <option value="">-- Select a category --</option>
+                    {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" placeholder="Describe the problem clearly..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-lg btn-block">Submit Complaint</button>
+            <a href="{{ url_for('student_menu') }}" class="btn btn-block" style="background:#a0aec0;">Cancel</a>
+        </form>
+    </div>
+{% endif %}
+{% endblock %}

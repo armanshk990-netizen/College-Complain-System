@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card narrow">
+    <h1>🔢 Sort Complaints</h1>
+    <form method="POST">
+        <div class="form-group"><label>Order</label>
+            <select name="order" required>
+                <option value="asc" {% if order=='asc' %}selected{% endif %}>Ascending</option>
+                <option value="desc" {% if order=='desc' %}selected{% endif %}>Descending</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-block btn-lg">Sort</button>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-block" style="background:#a0aec0;">Back</a>
+    </form>
+</div>
+{% if complaints is not none %}
+<div class="card">
+    <h2>Sorted Complaints</h2>
+    <div class="table-wrap"><table>
+        <tr><th>ID</th><th>Class</th><th>Category</th><th>Status</th></tr>
+        {% for c in complaints %}
+        <tr><td>#{{ c.complaint_id }}</td>
+            <td><span class="badge badge-class">{{ c.student_class }}</span></td>
+            <td>{{ c.category }}</td>
+            <td>{% if c.status == 'Pending' %}<span class="badge badge-pending">Pending</span>
+                {% elif c.status == 'In Progress' %}<span class="badge badge-progress">In Progress</span>
+                {% else %}<span class="badge badge-resolved">Resolved</span>{% endif %}</td></tr>
+        {% endfor %}
+    </table></div>
+</div>
+{% endif %}
+{% endblock %}

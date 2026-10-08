@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}My Complaint History{% endblock %}
+{% block content %}
+{% if session.get('admin_id') or session.get('inspector_id') %}
+    <div class="card narrow" style="text-align:center; margin-top:40px;">
+        <h2>Access Denied</h2>
+        <p class="subtitle">Student features are not available for staff.</p>
+        {% if session.get('admin_id') %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-lg">Go to Admin Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('inspector_dashboard') }}" class="btn btn-lg">Go to Inspector Dashboard</a>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="card narrow">
+        <h1>📚 My Complaint History</h1>
+        <p class="subtitle">Enter your roll number to see all your complaints (traversed via Linked List).</p>
+        <form method="POST">
+            <div class="form-group">
+                <label>Roll Number</label>
+                <input type="text" name="roll_number" placeholder="e.g. AIML01" required>
+            </div>
+            <button type="submit" class="btn btn-block btn-lg">Show History</button>
+        </form>
+    </div>
+    {% if history is not none and history|length > 0 %}
+    <div class="card">
+        <h2>History for {{ roll }}</h2>
+        <p class="subtitle">Linked List traversal: Head → complaint records → NULL</p>
+        <div class="table-wrap"><table>
+            <tr><th>ID</th><th>Class</th><th>Category</th><th>Description</th><th>Status</th><th>Date</th></tr>
+            {% for c in history %}
+            <tr>
+                <td>#{{ c.complaint_id }}</td>
+                <td><span class="badge badge-class">{{ c.student_class }}</span></td>
+                <td>{{ c.category }}</td>
+                <td>{{ c.description }}</td>
+                <td>{% if c.status == 'Pending' %}<span class="badge badge-pending">Pending</span>
+                    {% elif c.status == 'In Progress' %}<span class="badge badge-progress">In Progress</span>
+                    {% else %}<span class="badge badge-resolved">Resolved</span>{% endif %}</td>
+                <td>{{ c.date_submitted }}</td>
+            </tr>
+            {% endfor %}
+        </table></div>
+    </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

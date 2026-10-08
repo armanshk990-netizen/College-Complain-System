@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Student Menu{% endblock %}
+{% block content %}
+{% if session.get('admin_id') or session.get('inspector_id') %}
+    <div class="card narrow" style="text-align:center; margin-top:40px;">
+        <h2>Access Denied</h2>
+        <p class="subtitle">You are logged in as staff. Student features are not available.</p>
+        {% if session.get('admin_id') %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-lg">Go to Admin Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('inspector_dashboard') }}" class="btn btn-lg">Go to Inspector Dashboard</a>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="card narrow">
+        <h1>🎒 Student Menu</h1>
+        <p class="subtitle">What would you like to do?</p>
+        <a href="{{ url_for('student_submit') }}" class="btn btn-block btn-lg">📝 Submit a Complaint</a>
+        <a href="{{ url_for('student_track') }}" class="btn btn-block btn-lg">🔎 Track Complaint</a>
+        <a href="{{ url_for('student_history') }}" class="btn btn-block btn-lg">📚 View My Complaint History</a>
+        <a href="{{ url_for('index') }}" class="btn btn-block" style="background:#a0aec0;">← Back to Home</a>
+    </div>
+{% endif %}
+{% endblock %}

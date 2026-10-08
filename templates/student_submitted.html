@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card narrow" style="text-align:center;">
+    <h1>✅ Complaint Submitted!</h1>
+    <p class="subtitle">Thank you, {{ name }}.</p>
+    <div class="id-box"><small>YOUR COMPLAINT ID</small>{{ complaint_id }}</div>
+    <div class="info-box">Save this ID to track your complaint.</div>
+    <div class="flow">
+        <span class="flow-step pending">Pending</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step progress">In Progress</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step resolved">Resolved</span>
+    </div>
+    <a href="{{ url_for('student_menu') }}" class="btn btn-block">← Back</a>
+</div>
+{% endblock %}

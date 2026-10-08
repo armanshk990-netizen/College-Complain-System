@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Admin Dashboard</h1>
+<p class="subtitle">Welcome back, <b>{{ session.admin_username }}</b>! Complaints are <b>anonymous</b> — no student identity is shown.</p>
+
+<form method="GET" class="filter-bar">
+    <label>Filter by Class</label>
+    <select name="class" onchange="this.form.submit()">
+        <option value="">All Classes</option>
+        {% for c in classes %}
+        <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+    </select>
+    {% if selected_class %}<span class="badge badge-class">Showing: {{ selected_class }}</span>{% endif %}
+</form>
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="num">{{ stats.total }}</div><div class="label">Total</div></div>
+    <div class="stat-card pending"><div class="num">{{ stats.pending }}</div><div class="label">Pending</div></div>
+    <div class="stat-card progress"><div class="num">{{ stats.progress }}</div><div class="label">In Progress</div></div>
+    <div class="stat-card resolved"><div class="num">{{ stats.resolved }}</div><div class="label">Resolved</div></div>
+</div>
+
+<div class="section-title"><span class="bar"></span>⚡ Quick Actions</div>
+<div class="action-grid">
+    <a href="{{ url_for('admin_complaints') }}" class="action-card ac-blue">
+        <div class="ac-icon">📋</div>
+        <div class="ac-label">View All Complaints</div>
+        <div class="ac-desc">Browse every complaint</div>
+    </a>
+    <form method="POST" action="{{ url_for('admin_process') }}" style="display:contents;">
+        <button type="submit" class="action-card ac-green">
+            <div class="ac-icon">▶️</div>
+            <div class="ac-label">Process Next (FIFO)</div>
+            <div class="ac-desc">Oldest pending complaint</div>
+        </button>
+    </form>
+    <a href="{{ url_for('admin_search') }}" class="action-card ac-amber">
+        <div class="ac-icon">🔎</div>
+        <div class="ac-label">Search Complaints</div>
+        <div class="ac-desc">By ID or roll number</div>
+    </a>
+    <a href="{{ url_for('admin_sort') }}" class="action-card ac-purple">
+        <div class="ac-icon">🔢</div>
+        <div class="ac-label">Sort Complaints</div>
+        <div class="ac-desc">Bubble sort by ID</div>
+    </a>
+    <a href="{{ url_for('admin_update_list') }}" class="action-card ac-cyan">
+        <div class="ac-icon">✏️</div>
+        <div class="ac-label">Update Status</div>
+        <div class="ac-desc">Move to next stage</div>
+    </a>
+    <form method="POST" action="{{ url_for('admin_undo') }}" style="display:contents;">
+        <button type="submit" class="action-card ac-rose">
+            <div class="ac-icon">↩️</div>
+            <div class="ac-label">Undo Last Change</div>
+            <div class="ac-desc">Restore previous status</div>
+        </button>
+    </form>
+    <a href="{{ url_for('admin_reports') }}" class="action-card ac-indigo">
+        <div class="ac-icon">📊</div>
+        <div class="ac-label">Full Reports</div>
+        <div class="ac-desc">All charts & analytics</div>
+    </a>
+    <a href="{{ url_for('admin_archived') }}" class="action-card ac-slate">
+        <div class="ac-icon">📦</div>
+        <div class="ac-label">Archived</div>
+        <div class="ac-desc">Resolved & hidden</div>
+    </a>
+    <a href="{{ url_for('admin_manage_admins') }}" class="action-card ac-pink">
+        <div class="ac-icon">👤</div>
+        <div class="ac-label">Manage Admins</div>
+        <div class="ac-desc">Add or remove admins</div>
+    </a>
+    <a href="{{ url_for('admin_manage_inspectors') }}" class="action-card ac-teal">
+        <div class="ac-icon">🔍</div>
+        <div class="ac-label">Manage Inspectors</div>
+        <div class="ac-desc">Create inspector logins</div>
+    </a>
+</div>
+
+<div class="section-title"><span class="bar"></span>📊 Live Data Structures</div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+    <div class="stat-card"><div class="num">{{ queue_size }}</div><div class="label">Queue (FIFO)</div></div>
+    <div class="stat-card"><div class="num">{{ undo_size }}</div><div class="label">Undo Stack (LIFO)</div></div>
+</div>
+
+<div class="section-title"><span class="bar"></span>📈 Analytics {% if selected_class %}— {{ selected_class }}{% endif %}</div>
+
+<div class="card">
+    <h2>Complaints by Category</h2>
+    {% if dash.by_category|length == 0 %}
+        <div class="info-box">No data for this filter.</div>
+    {% else %}
+        {% for row in dash.by_category %}
+        <div class="bar-row">
+            <div class="bar-label">{{ row.label }}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:{{ row.percent }}%;"></div></div>
+            <div class="bar-value">{{ row.count }} ({{ row.percent }}%)</div>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+{% if dash.by_class|length > 0 %}
+<div class="card">
+    <h2>Complaints by Class</h2>
+    {% for row in dash.by_class %}
+    <div class="bar-row">
+        <div class="bar-label">{{ row.label }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ row.percent }}%; background:linear-gradient(90deg,#10b981,#059669);"></div></div>
+        <div class="bar-value">{{ row.count }} ({{ row.percent }}%)</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Status Distribution</h2>
+    {% for s in ['Pending', 'In Progress', 'Resolved'] %}
+    <div class="bar-row">
+        <div class="bar-label">{{ s }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ dash.status_pct[s] }}%; background:
+            {% if s == 'Pending' %}linear-gradient(90deg,#f59e0b,#d97706)
+            {% elif s == 'In Progress' %}linear-gradient(90deg,#3b82f6,#1d4ed8)
+            {% else %}linear-gradient(90deg,#10b981,#059669){% endif %};"></div></div>
+        <div class="bar-value">{{ dash.by_status[s] }} ({{ dash.status_pct[s] }}%)</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

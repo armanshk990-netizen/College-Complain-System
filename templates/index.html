@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>College Complaint Management System</h1>
+    <p>Submit complaints, track progress, and manage issues efficiently using Data Structures — Queue, Stack, Linked List, Linear Search and Bubble Sort.</p>
+</div>
+
+{% if session.get('admin_id') %}
+    <div class="card narrow" style="text-align:center; margin-top:30px;">
+        <h2>You are logged in as Admin</h2>
+        <p class="subtitle">You cannot submit complaints. Please go to your dashboard.</p>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-lg">Go to Admin Dashboard</a>
+    </div>
+{% elif session.get('inspector_id') %}
+    <div class="card narrow" style="text-align:center; margin-top:30px;">
+        <h2>You are logged in as Inspector</h2>
+        <p class="subtitle">Read-only access. Go to your dashboard to view complaints.</p>
+        <a href="{{ url_for('inspector_dashboard') }}" class="btn btn-lg">Go to Inspector Dashboard</a>
+    </div>
+{% else %}
+    <div class="grid">
+        <a href="{{ url_for('student_menu') }}" class="role-card">
+            <div class="icon">🎒</div>
+            <h3>Student</h3>
+            <p>Submit a new complaint, track status, and view your complaint history.</p>
+        </a>
+        <a href="{{ url_for('admin_login') }}" class="role-card">
+            <div class="icon">🛠️</div>
+            <h3>Admin</h3>
+            <p>Login to manage complaints, process the FIFO queue, update status, and undo changes.</p>
+        </a>
+        <a href="{{ url_for('inspector_login') }}" class="role-card">
+            <div class="icon">🔍</div>
+            <h3>Inspector</h3>
+            <p>Read-only access. Login with the password given by the admin.</p>
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Inspector Dashboard</h1>
+<p class="subtitle">Welcome, <b>{{ session.inspector_name }}</b>. Read-only access. Complaints are anonymous.</p>
+
+<form method="GET" class="filter-bar" style="flex-wrap:wrap;">
+    <label>Class</label>
+    <select name="class" onchange="this.form.submit()">
+        <option value="">All Classes</option>
+        {% for c in classes %}
+        <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Sort by</label>
+    <select name="sort" onchange="this.form.submit()">
+        <option value="id"       {% if sort_by=='id' %}selected{% endif %}>Complaint ID</option>
+        <option value="date"     {% if sort_by=='date' %}selected{% endif %}>Date (Newest)</option>
+        <option value="class"    {% if sort_by=='class' %}selected{% endif %}>Class</option>
+        <option value="category" {% if sort_by=='category' %}selected{% endif %}>Category</option>
+        <option value="status"   {% if sort_by=='status' %}selected{% endif %}>Status</option>
+    </select>
+</form>
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="num">{{ stats.total }}</div><div class="label">Total</div></div>
+    <div class="stat-card pending"><div class="num">{{ stats.pending }}</div><div class="label">Pending</div></div>
+    <div class="stat-card progress"><div class="num">{{ stats.progress }}</div><div class="label">In Progress</div></div>
+    <div class="stat-card resolved"><div class="num">{{ stats.resolved }}</div><div class="label">Resolved</div></div>
+</div>
+
+<div class="section-title"><span class="bar"></span>🔎 Quick View</div>
+<div class="action-grid">
+    <a href="{{ url_for('inspector_dashboard') }}" class="action-card ac-blue">
+        <div class="ac-icon">📋</div>
+        <div class="ac-label">All Complaints</div>
+        <div class="ac-desc">Full list below</div>
+    </a>
+</div>
+
+<div class="section-title"><span class="bar"></span>📊 Category Breakdown {% if selected_class %}— {{ selected_class }}{% endif %}</div>
+<div class="card">
+    {% if dash.by_category|length == 0 %}
+        <div class="info-box">No data.</div>
+    {% else %}
+        {% for row in dash.by_category %}
+        <div class="bar-row">
+            <div class="bar-label">{{ row.label }}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:{{ row.percent }}%;"></div></div>
+            <div class="bar-value">{{ row.count }} ({{ row.percent }}%)</div>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+{% if dash.by_class|length > 0 %}
+<div class="card">
+    <h2>Complaints by Class</h2>
+    {% for row in dash.by_class %}
+    <div class="bar-row">
+        <div class="bar-label">{{ row.label }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ row.percent }}%; background:linear-gradient(90deg,#10b981,#059669);"></div></div>
+        <div class="bar-value">{{ row.count }} ({{ row.percent }}%)</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Status Distribution</h2>
+    {% for s in ['Pending', 'In Progress', 'Resolved'] %}
+    <div class="bar-row">
+        <div class="bar-label">{{ s }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ dash.status_pct[s] }}%; background:
+            {% if s == 'Pending' %}linear-gradient(90deg,#f59e0b,#d97706)
+            {% elif s == 'In Progress' %}linear-gradient(90deg,#3b82f6,#1d4ed8)
+            {% else %}linear-gradient(90deg,#10b981,#059669){% endif %};"></div></div>
+        <div class="bar-value">{{ dash.by_status[s] }} ({{ dash.status_pct[s] }}%)</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="section-title"><span class="bar"></span>📋 All Complaints (Anonymous)</div>
+<div class="card">
+    <div class="table-wrap"><table>
+        <tr><th>ID</th><th>Class</th><th>Category</th><th>Description</th><th>Date</th><th>Status</th><th>View</th></tr>
+        {% for c in complaints %}
+        <tr>
+            <td><b>#{{ c.complaint_id }}</b></td>
+            <td><span class="badge badge-class">{{ c.student_class }}</span></td>
+            <td>{{ c.category }}</td>
+            <td>{{ c.description }}</td>
+            <td>{{ c.date_submitted }}</td>
+            <td>{% if c.status == 'Pending' %}<span class="badge badge-pending">Pending</span>
+                {% elif c.status == 'In Progress' %}<span class="badge badge-progress">In Progress</span>
+                {% else %}<span class="badge badge-resolved">Resolved</span>{% endif %}</td>
+            <td><a href="{{ url_for('inspector_view', cid=c.complaint_id) }}" class="btn btn-sm">View</a></td>
+        </tr>
+        {% endfor %}
+    </table></div>
+</div>
+{% endblock %}
